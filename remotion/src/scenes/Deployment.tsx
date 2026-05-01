@@ -1,6 +1,7 @@
 import { interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
 import { palette } from "../lib/palette";
 import { timing, sceneFrame } from "../lib/timing";
+import { PanelFrame } from "../components/PanelFrame";
 
 // 22–27 s (frames 660-810) — Module C3: Online Deployment
 //
@@ -53,9 +54,17 @@ export const Deployment: React.FC = () => {
 
   return (
     <div style={{ position: "absolute", inset: 0, opacity: sceneOut }}>
+      <PanelFrame
+        variant="mint"
+        localFrame={local}
+        fadeStart={0}
+        fadeEnd={15}
+        fadeOutStart={135}
+        fadeOutEnd={150}
+      />
       <SectionHeader text="(C3) Online Deployment on Cluster" subFrame={local} />
 
-      <svg width="100%" height="100%" viewBox="0 0 1920 1080">
+      <svg width="1920" height="1080" viewBox="0 0 1920 1080" style={{ position: "absolute", top: 0, left: 0 }}>
         <defs>
           <marker
             id="arrow3"
@@ -261,7 +270,7 @@ const SectionHeader: React.FC<{ text: string; subFrame: number }> = ({
     <div
       style={{
         position: "absolute",
-        top: 60,
+        top: 60, zIndex: 10,
         left: 100,
         opacity,
         fontSize: 44,

@@ -9,6 +9,7 @@ import {
 } from "remotion";
 import { palette } from "../lib/palette";
 import { timing, sceneFrame } from "../lib/timing";
+import { PanelFrame } from "../components/PanelFrame";
 
 // 3–12 s (frames 90-360) — Module C1: Graph World Model
 //
@@ -126,6 +127,15 @@ export const GraphWorldModel: React.FC = () => {
         opacity: sceneOut,
       }}
     >
+      <PanelFrame
+        variant="blue"
+        localFrame={local}
+        fadeStart={0}
+        fadeEnd={15}
+        fadeOutStart={255}
+        fadeOutEnd={270}
+      />
+
       {/* Terminal/data video — sits over the bottom-left "Logged Transitions" area */}
       <div
         style={{
@@ -150,7 +160,7 @@ export const GraphWorldModel: React.FC = () => {
 
       <SectionHeader text="(C1) Graph World Model" subFrame={local} />
 
-      <svg width="100%" height="100%" viewBox="0 0 1920 1080">
+      <svg width="1920" height="1080" viewBox="0 0 1920 1080" style={{ position: "absolute", top: 0, left: 0 }}>
         {/* Edges */}
         {EDGES.map(([a, b], i) => {
           const sa = SERVICES[a];
@@ -410,7 +420,7 @@ const SectionHeader: React.FC<{ text: string; subFrame: number }> = ({
     <div
       style={{
         position: "absolute",
-        top: 60,
+        top: 60, zIndex: 10,
         left: 100,
         opacity,
         fontSize: 44,

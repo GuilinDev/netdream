@@ -9,6 +9,7 @@ import {
 } from "remotion";
 import { palette } from "../lib/palette";
 import { timing, sceneFrame } from "../lib/timing";
+import { PanelFrame } from "../components/PanelFrame";
 
 // 27–30 s (frames 810-900) — Outro: Pareto frontier + headline result
 
@@ -71,13 +72,21 @@ export const Outro: React.FC = () => {
     extrapolateRight: "clamp",
   });
 
-  // Icosahedron video appears at low opacity for outro hero feel
-  const heroOpacity = interpolate(local, [0, 20, 80, 90], [0, 0.22, 0.22, 0.05], {
+  // Icosahedron video appears at very low opacity — subtle hero accent only.
+  const heroOpacity = interpolate(local, [0, 20, 80, 90], [0, 0.08, 0.08, 0.02], {
     extrapolateRight: "clamp",
   });
 
   return (
     <div style={{ position: "absolute", inset: 0 }}>
+      <PanelFrame
+        variant="blue"
+        localFrame={local}
+        fadeStart={0}
+        fadeEnd={15}
+        fadeOutStart={9999}
+        fadeOutEnd={99999}
+      />
       {/* Hero icosahedron video — subtle outro accent */}
       <AbsoluteFill style={{ opacity: heroOpacity }}>
         <OffthreadVideo
@@ -88,7 +97,7 @@ export const Outro: React.FC = () => {
         />
       </AbsoluteFill>
 
-      <svg width="100%" height="100%" viewBox="0 0 1920 1080">
+      <svg width="1920" height="1080" viewBox="0 0 1920 1080" style={{ position: "absolute", top: 0, left: 0 }}>
         {/* === Axes === */}
         <g opacity={axesAppear}>
           <line

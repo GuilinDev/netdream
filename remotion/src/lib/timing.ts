@@ -1,5 +1,16 @@
 // Master timeline — 900 frames @ 30 fps = 30 seconds.
-// Each scene returns its absolute start frame, end frame, and duration.
+// Each scene is wrapped in a <Sequence from={...}>, so inside the scene
+// component `useCurrentFrame()` ALREADY returns a sequence-local frame
+// starting at 0. Each scene's local timeline is therefore:
+//
+//   Title: 0..89 (3 s)
+//   C1:    0..269 (9 s)
+//   C2:    0..299 (10 s)
+//   C3:    0..149 (5 s)
+//   Outro: 0..89  (3 s)
+//
+// `sceneFrame` is kept as an identity helper for backwards compatibility
+// with existing scene code; it just returns the input frame unchanged.
 
 export const timing = {
   // Title / hook
@@ -23,8 +34,8 @@ export const timing = {
   outroEnd: 900,
 } as const;
 
-// Helper: relative frame within a scene window
-export const sceneFrame = (
-  globalFrame: number,
-  sceneStart: number
-): number => Math.max(0, globalFrame - sceneStart);
+// Scene-local frame: inside a <Sequence>, useCurrentFrame() already
+// returns the frame relative to the sequence start. So this helper
+// is now an identity — kept only so existing call sites don't break.
+export const sceneFrame = (frame: number, _sceneStart: number): number =>
+  Math.max(0, frame);
