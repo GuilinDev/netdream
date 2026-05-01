@@ -1,4 +1,12 @@
-import { interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
+import {
+  AbsoluteFill,
+  interpolate,
+  OffthreadVideo,
+  spring,
+  staticFile,
+  useCurrentFrame,
+  useVideoConfig,
+} from "remotion";
 import { palette } from "../lib/palette";
 import { timing, sceneFrame } from "../lib/timing";
 
@@ -63,8 +71,23 @@ export const Outro: React.FC = () => {
     extrapolateRight: "clamp",
   });
 
+  // Icosahedron video appears at low opacity for outro hero feel
+  const heroOpacity = interpolate(local, [0, 20, 80, 90], [0, 0.22, 0.22, 0.05], {
+    extrapolateRight: "clamp",
+  });
+
   return (
     <div style={{ position: "absolute", inset: 0 }}>
+      {/* Hero icosahedron video — subtle outro accent */}
+      <AbsoluteFill style={{ opacity: heroOpacity }}>
+        <OffthreadVideo
+          src={staticFile("icosahedron.mp4")}
+          muted
+          startFrom={0}
+          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+        />
+      </AbsoluteFill>
+
       <svg width="100%" height="100%" viewBox="0 0 1920 1080">
         {/* === Axes === */}
         <g opacity={axesAppear}>

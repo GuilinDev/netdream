@@ -1,22 +1,23 @@
-import { AbsoluteFill, useCurrentFrame, useVideoConfig } from "remotion";
+import { AbsoluteFill, OffthreadVideo, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
 import { palette } from "../lib/palette";
 
-// Subtle animated gradient + drifting particle dots — provides the "tech"
-// background feel without overpowering the foreground content.
+// Subtle animated gradient + drifting particles + a real Pexels particle
+// network video looped at low opacity behind the foreground content.
+//
+// We keep the SVG particles too — they fill in the gaps and give the
+// figure-side of the screen visual texture even where the video is dark.
 
 export const Background: React.FC = () => {
   const frame = useCurrentFrame();
   const { width, height } = useVideoConfig();
 
-  // Particles: deterministic positions derived from a seed so the layout
-  // looks busy but not chaotic.
-  const particles = Array.from({ length: 80 }, (_, i) => {
+  const particles = Array.from({ length: 60 }, (_, i) => {
     const seed = (i * 9301 + 49297) % 233280;
     const x = (seed / 233280) * width;
     const y = ((seed * 17) % 233280 / 233280) * height;
     const phase = (i * 13) % 100;
     const drift = Math.sin((frame + phase) / 60) * 12;
-    const opacity = 0.18 + 0.12 * Math.sin((frame + phase * 2) / 80);
+    const opacity = 0.12 + 0.08 * Math.sin((frame + phase * 2) / 80);
     return { x: x + drift, y, opacity, r: 1.5 + (i % 3) };
   });
 
@@ -26,6 +27,22 @@ export const Background: React.FC = () => {
         background: `linear-gradient(180deg, ${palette.bgTop} 0%, ${palette.bgBottom} 100%)`,
       }}
     >
+      {/* Pexels particle-network video, very low opacity, sits behind everything */}
+      <AbsoluteFill style={{ opacity: 0.32 }}>
+        <OffthreadVideo
+          src={staticFile("particles.mp4")}
+          muted
+          loop
+          startFrom={0}
+          style={{
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+          }}
+        />
+      </AbsoluteFill>
+
+      {/* SVG particles overlaid for extra liveliness */}
       <svg
         width={width}
         height={height}
@@ -48,6 +65,13 @@ export const Background: React.FC = () => {
           />
         ))}
       </svg>
+
+      {/* Soft white wash layer to keep foreground readable */}
+      <AbsoluteFill
+        style={{
+          background: `radial-gradient(ellipse at center, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0.25) 100%)`,
+        }}
+      />
     </AbsoluteFill>
   );
 };

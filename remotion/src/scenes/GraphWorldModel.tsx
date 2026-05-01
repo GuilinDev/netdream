@@ -1,4 +1,12 @@
-import { interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
+import {
+  AbsoluteFill,
+  interpolate,
+  OffthreadVideo,
+  spring,
+  staticFile,
+  useCurrentFrame,
+  useVideoConfig,
+} from "remotion";
 import { palette } from "../lib/palette";
 import { timing, sceneFrame } from "../lib/timing";
 
@@ -101,6 +109,15 @@ export const GraphWorldModel: React.FC = () => {
     extrapolateRight: "clamp",
   });
 
+  // Terminal-code video appears briefly during the encoder build-up,
+  // then fades — gives a "training data flowing in" feel.
+  const terminalOpacity = interpolate(
+    local,
+    [70, 100, 200, 230],
+    [0, 0.22, 0.22, 0],
+    { extrapolateRight: "clamp" }
+  );
+
   return (
     <div
       style={{
@@ -109,6 +126,28 @@ export const GraphWorldModel: React.FC = () => {
         opacity: sceneOut,
       }}
     >
+      {/* Terminal/data video — sits over the bottom-left "Logged Transitions" area */}
+      <div
+        style={{
+          position: "absolute",
+          left: 200,
+          top: 750,
+          width: 360,
+          height: 220,
+          opacity: terminalOpacity,
+          borderRadius: 8,
+          overflow: "hidden",
+          mixBlendMode: "multiply",
+        }}
+      >
+        <OffthreadVideo
+          src={staticFile("terminal.mp4")}
+          muted
+          startFrom={0}
+          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+        />
+      </div>
+
       <SectionHeader text="(C1) Graph World Model" subFrame={local} />
 
       <svg width="100%" height="100%" viewBox="0 0 1920 1080">

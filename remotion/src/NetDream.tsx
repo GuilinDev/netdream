@@ -1,4 +1,4 @@
-import { Sequence, useCurrentFrame } from "remotion";
+import { Audio, Sequence, staticFile, useCurrentFrame } from "remotion";
 import { Background } from "./components/Background";
 import { Title } from "./scenes/Title";
 import { GraphWorldModel } from "./scenes/GraphWorldModel";
@@ -17,6 +17,9 @@ export const NetDream: React.FC = () => {
 
   return (
     <>
+      {/* Background music (looped, low volume) */}
+      <Audio src={staticFile("bgm.mp3")} volume={0.18} />
+
       {/* Persistent background through all scenes */}
       <Background />
 
