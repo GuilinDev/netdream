@@ -1,0 +1,65 @@
+\section*{NeurIPS Paper Checklist}
+
+\begin{enumerate}
+
+\item {\bf Claims}
+\begin{enumerate}
+  \item Do the main claims made in the abstract and introduction accurately reflect the paper's contributions and scope?
+  \answerYes{The abstract states three contributions---formulating Kubernetes autoscaling as planning with a learned graph world model, an imagination-based safety filter, and a real-cluster evaluation on Online Boutique deployed on AWS EKS---all of which are demonstrated experimentally.}
+\end{enumerate}
+
+\item {\bf Limitations}
+\begin{enumerate}
+  \item Does the paper discuss the limitations of the work performed by the authors?
+  \answerYes{Section~\ref{sec:discussion} contains a dedicated Limitations paragraph covering four items: statistical power (3 seeds on EKS; bootstrap CI on the violation difference vs.\ HPA-min3 crosses zero, so the 54\% cost advantage is the primary empirical claim and the violation advantage should be read as a same-tier result); baseline coverage (GraphPilot and KARMA implementations were not publicly available); topology scale (the 11-service Online Boutique testbed is smaller than many production deployments); and the replica-count cost proxy.}
+\end{enumerate}
+
+\item {\bf Theory}
+\begin{enumerate}
+  \item For each theoretical result, does the paper provide the full set of assumptions and a complete (or correct) proof?
+  \answerNA{The paper does not contain formal theoretical results; the safety filter is an empirical mechanism whose validation set recall is reported in Section~\ref{sec:prediction} and whose distribution-shift caveat is discussed in Section~\ref{sec:discussion}.}
+\end{enumerate}
+
+\item {\bf Experiments}
+\begin{enumerate}
+  \item Does the paper include the code, data, and instructions needed to reproduce the main experimental results?
+  \answerYes{We will release all code (environment, model, training and evaluation scripts, custom EKS controller) and data (collected transitions, trained model checkpoints, raw episode logs) upon publication. Hyperparameters are fully specified in Appendix~\ref{app:hyperparams} and EKS cluster setup in Appendix~\ref{app:deployment}.}
+  \item Does the paper specify all the training and test details (e.g., data splits, hyperparameters, how they were chosen, etc.) necessary to understand the results?
+  \answerYes{Section~\ref{sec:experiments} and Appendix~\ref{app:hyperparams} specify all hyperparameters, data splits (80/20), training procedures, and the random seeds used per experiment cell.}
+  \item Does the paper report error bars (e.g., due to random seeds or other randomness)?
+  \answerYes{All EKS results report mean $\pm$ std over 3 random seeds (42, 123, 456); the simulator-based ablations and prediction-accuracy tables use 5 random seeds (42, 123, 456, 789, 1024). Bootstrap 95\% confidence intervals on the headline cost--violation differences are reported in Appendix~\ref{app:stats}.}
+  \item For each experiment, does the paper provide sufficient information on the computer resources needed?
+  \answerYes{Training uses a single NVIDIA GPU and completes in under 10 minutes for the 86K-parameter dynamics model. The AWS EKS cluster (3$\times$ t3.medium) ran the full evaluation in 3.4 wall-clock hours at a total cost below \$1. Full details in Appendix~\ref{app:deployment} and Table~\ref{tab:eks-stats}.}
+\end{enumerate}
+
+\item {\bf Broader Impact}
+\begin{enumerate}
+  \item Does the paper discuss both potential positive societal impacts and negative societal impacts?
+  \answerYes{Reduced over-provisioning lowers cloud-compute energy use; the negative impact is over-reliance on a learned safety filter whose distribution-shift behavior is not formally guaranteed, which we explicitly flag in Section~\ref{sec:discussion}.}
+\end{enumerate}
+
+\item {\bf Safeguards}
+\begin{enumerate}
+  \item Does the paper describe safeguards that have been put in place for responsible release of data or models?
+  \answerNA{The released artifacts (controller code, trained dynamics model, episode logs) carry no privacy or dual-use risk: the workload generator uses synthetic Locust traffic and the cluster contains no user data.}
+\end{enumerate}
+
+\item {\bf Licenses}
+\begin{enumerate}
+  \item Are the creators or original owners of assets (e.g., code, data, models), used in the paper, properly credited and are the license and terms of use explicitly mentioned and properly respected?
+  \answerYes{Stable-Baselines3 (MIT) is used for the PPO baseline; Online Boutique (Apache 2.0) is used as the microservice testbed; PyTorch Geometric (MIT) provides the GAT layers. All citations are included in the bibliography.}
+\end{enumerate}
+
+\item {\bf Assets}
+\begin{enumerate}
+  \item Are new assets introduced in the paper well documented and is the documentation provided alongside the assets?
+  \answerYes{The K8s mesh simulator, GNN dynamics model, MPC planner, custom EKS controller, and safety filter are all described in the paper and Appendix and will be released with code documentation.}
+\end{enumerate}
+
+\item {\bf Human Subjects}
+\begin{enumerate}
+  \item Does the paper use human subjects?
+  \answerNo{}
+\end{enumerate}
+
+\end{enumerate}

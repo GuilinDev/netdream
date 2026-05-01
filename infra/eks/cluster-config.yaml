@@ -1,0 +1,46 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: netdream-experiment
+  region: us-west-2
+  version: "1.30"
+  tags:
+    Project: netdream-paper2
+    Owner: guilinzhang
+    Purpose: research-validation
+    AutoTeardown: "true"
+    MaxCostUSD: "10"
+
+iam:
+  withOIDC: true
+
+addons:
+  - name: vpc-cni
+  - name: coredns
+  - name: kube-proxy
+  - name: eks-pod-identity-agent
+
+managedNodeGroups:
+  - name: workers
+    instanceType: t3.medium
+    desiredCapacity: 3
+    minSize: 3
+    maxSize: 3
+    volumeSize: 30
+    volumeType: gp3
+    labels:
+      workload: netdream
+    tags:
+      Project: netdream-paper2
+      AutoTeardown: "true"
+    iam:
+      withAddonPolicies:
+        autoScaler: true
+        cloudWatch: true
+        ebs: true
+
+cloudWatch:
+  clusterLogging:
+    enableTypes: ["api", "audit"]
+    logRetentionInDays: 1

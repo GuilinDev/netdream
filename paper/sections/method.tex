@@ -1,0 +1,305 @@
+\section{Method}
+\label{sec:method}
+
+NetDream is built on one idea: safe autoscaling requires a model of the
+future. Instead of reacting to threshold crossings, NetDream learns a
+graph world model of a Kubernetes microservice application, uses it to
+imagine the consequences of candidate scaling actions, rejects unsafe
+futures, and executes the first action of the best safe plan. This
+section formalises the control problem
+(Section~\ref{sec:formulation}), specifies the graph world model
+(Section~\ref{sec:world-model}), describes imagination-based planning
+with the safety filter (Section~\ref{sec:planning}), and summarises how
+the trained model is deployed on a real Kubernetes cluster
+(Section~\ref{sec:deployment}).
+
+\subsection{Problem Formulation}
+\label{sec:formulation}
+
+We represent a Kubernetes application as a directed service graph
+$\mathcal{G}=(V,E)$, where each node $i\in V$ is a microservice and each
+edge $(i,j)\in E$ is a service-call dependency. At control step $t$,
+service $i$ has state
+\[
+x_{t,i} =
+[\mathrm{CPU}_{t,i}, \mathrm{memory}_{t,i}, \mathrm{QPS}_{t,i},
+\mathrm{latency}_{t,i}, \mathrm{error}_{t,i}, \mathrm{replicas}_{t,i}]
+\in \mathbb{R}^{d}.
+\]
+The full cluster state is
+\[
+X_t = [x_{t,1},\ldots,x_{t,N}] \in \mathbb{R}^{N\times d}.
+\]
+
+The autoscaler chooses a per-service scaling action
+\[
+A_t=[a_{t,1},\ldots,a_{t,N}], \qquad a_{t,i}\in\{-1,0,+1\},
+\]
+corresponding to scaling service $i$ down, holding it fixed, or scaling
+it up by one replica. After the action is applied, the cluster evolves
+to $X_{t+1}$, receives reward $r_t$, and may incur a service-level
+violation $c_t\in\{0,1\}$. The true transition process
+\[
+X_{t+1}\sim T(X_t,A_t;\mathcal{G})
+\]
+is unknown and difficult to model analytically because it depends on
+request routing, queueing, pod startup delays, workload shifts, and
+cross-service dependencies.
+
+The objective is to reduce service-level violations while avoiding
+unnecessary replica cost. We use a reward that penalizes both resource
+usage and violations:
+\[
+r_t =
+-\lambda_{\mathrm{cost}}\mathrm{Cost}(X_t)
+-\lambda_{\mathrm{slo}}c_t,
+\qquad
+\mathrm{Cost}(X_t)
+=
+\sum_{i=1}^{N}\mathrm{replicas}_{t,i},
+\]
+where the violation indicator $c_t = \mathds{1}[\,\exists\,i\in V :
+\mathrm{latency}_{t+1,i}>\mathrm{SLO}\,]$ flags whether the transition
+into $X_{t+1}$ produced an SLO breach at any service.
+However, NetDream does not rely on reward optimization alone. It also
+learns an explicit constraint predictor and uses it during planning to
+discard unsafe futures before they are executed.
+
+\subsection{Graph World Model}
+\label{sec:world-model}
+
+NetDream learns an action-conditioned graph world model
+\[
+f_\theta(\mathcal{G},X_t,A_t)
+\rightarrow
+(\Delta\hat{X}_t,\hat{r}_t,\hat{c}_t),
+\]
+where $\Delta\hat{X}_t$ is the predicted state residual, $\hat{r}_t$ is
+the predicted reward, and $\hat{c}_t$ is the predicted probability of a
+service-level violation. The next state is predicted as
+\[
+\hat{X}_{t+1}=X_t+\Delta\hat{X}_t .
+\]
+Residual prediction makes the model focus on short-term changes rather
+than reconstructing absolute state, which is important for stable
+multi-step rollouts.
+
+For each service, NetDream first encodes the current state and candidate
+scaling action. Because $a_{t,i}\in\{-1,0,+1\}$ is categorical, we
+one-hot encode it before concatenation:
+\[
+h^{(0)}_{t,i}
+=
+\phi_{\mathrm{enc}}\left(\bigl[x_{t,i}\,\bigl\|\,
+\mathrm{onehot}(a_{t,i})\bigr]\right),
+\qquad
+\mathrm{onehot}(a_{t,i})\in\{0,1\}^{3}.
+\]
+This makes the model counterfactual: it can predict what would happen
+under different possible scaling actions, not merely forecast the next
+state under the current policy.
+
+NetDream then applies $L$ layers of graph attention over the service-call
+topology. The directed call graph $\mathcal{G}$ is symmetrized for
+message passing so that downstream load and upstream backpressure can
+both flow along an edge; we write $\mathcal{N}(i)$ for the resulting
+undirected neighbourhood of service $i$.
+\[
+\tilde{h}^{(\ell+1)}_{t,i}
+=
+\mathrm{GAT}^{(\ell)}
+\left(
+h^{(\ell)}_{t,i},
+\{h^{(\ell)}_{t,j}:j\in\mathcal{N}(i)\}
+\right),
+\qquad
+h^{(\ell+1)}_{t,i}
+=
+h^{(\ell)}_{t,i}+\tilde{h}^{(\ell+1)}_{t,i}.
+\]
+Message passing lets the model capture how load, latency, and failures
+propagate across connected services. Attention is useful because service
+dependencies are heterogeneous: scaling one service may strongly affect
+some downstream services while barely affecting others.
+
+The final node embeddings are decoded by three heads. The dynamics head
+predicts per-service residual state change:
+\[
+\Delta\hat{x}_{t,i}=\phi_{\mathrm{dyn}}(h^{(L)}_{t,i}).
+\]
+The reward and constraint heads operate on a graph-level representation
+\[
+g_t=\mathrm{READOUT}\left(\{h^{(L)}_{t,i}\}_{i=1}^{N}\right),
+\]
+where $\mathrm{READOUT}$ is mean pooling, yielding
+\[
+\hat{r}_t=\phi_{\mathrm{rew}}(g_t),
+\qquad
+\hat{c}_t=\sigma(\phi_{\mathrm{con}}(g_t)).
+\]
+Thus, the same world model predicts how the system evolves, how costly
+the transition is, and whether the future is unsafe.
+
+\paragraph{Training the world model.}
+The world model is trained offline from logged Kubernetes transitions
+$(\mathcal{G},X_t,A_t,X_{t+1},r_t,c_t)$ by minimising a multi-task
+objective:
+\[
+\mathcal{L}(\theta)
+=
+\underbrace{
+\left\|
+f_{\theta}^{\mathrm{dyn}}(\mathcal{G},X_t,A_t)
+-
+(X_{t+1}-X_t)
+\right\|_2^2
+}_{\text{state dynamics}}
++
+\alpha
+\underbrace{
+(\hat{r}_t-r_t)^2
+}_{\text{reward}}
++
+\beta
+\underbrace{
+\mathrm{BCE}(\hat{c}_t,c_t)
+}_{\text{constraint}} .
+\]
+We use $\alpha=\beta=0.1$, keeping dynamics prediction as the dominant
+learning signal while still learning reward and safety estimates for
+planning. Instead of learning a policy directly through trial and error,
+NetDream first learns how the cluster responds to actions; the learned
+model then becomes a simulator for planning. This avoids unsafe online
+exploration in the real cluster and makes the controller inspectable:
+predictions, rewards, and violation risks are explicit quantities that
+can be evaluated before action execution.
+
+\subsection{Imagination-Based Planning}
+\label{sec:planning}
+
+At deployment time, NetDream uses the learned world model for
+model-predictive control. Given the current state $X_t$, the planner
+samples $K$ candidate action sequences of horizon $H$:
+\[
+\mathbf{A}^{(k)}_{t:t+H-1}
+=
+(A^{(k)}_t,\ldots,A^{(k)}_{t+H-1}),
+\qquad k=1,\ldots,K .
+\]
+Each sequence is rolled out inside the world model:
+\[
+\hat{X}^{(k)}_{t+h+1}
+=
+\hat{X}^{(k)}_{t+h}
++
+f_{\theta}^{\mathrm{dyn}}
+(\mathcal{G},\hat{X}^{(k)}_{t+h},A^{(k)}_{t+h}),
+\]
+while also predicting rewards and violation probabilities
+$\hat{r}^{(k)}_{t+h}$ and $\hat{c}^{(k)}_{t+h}$. The predicted return of
+a candidate plan is
+\[
+J^{(k)}
+=
+\sum_{h=0}^{H-1}
+\gamma^h \hat{r}^{(k)}_{t+h}.
+\]
+
+Before selecting the best plan, NetDream applies an imagination-based
+safety filter. A candidate sequence is accepted only if its predicted
+violation probability remains below threshold $\tau$ at every imagined
+step:
+\[
+\max_{0\le h < H}\hat{c}^{(k)}_{t+h}\le \tau .
+\]
+Let $\mathcal{K}_{\mathrm{safe}}$ denote the set of candidates that pass
+this filter. NetDream selects
+\[
+k^*=\arg\max_{k\in\mathcal{K}_{\mathrm{safe}}} J^{(k)}
+\]
+and executes only the first action $A^{(k^*)}_t$ in the real cluster. If
+no candidate is predicted safe, the controller falls back to a
+conservative no-op action. After observing the next real cluster state,
+NetDream replans. Algorithm~\ref{alg:netdream} summarises the loop.
+
+\begin{algorithm}[t]
+\caption{NetDream: Imagination-Based Safe Autoscaling}
+\label{alg:netdream}
+\begin{algorithmic}[1]
+\STATE \textbf{Input:} graph $\mathcal{G}$, state $X_t$, world model
+$f_\theta$, horizon $H=5$, candidates $K=64$, threshold $\tau=0.5$,
+discount $\gamma=0.99$
+\STATE Sample candidate action sequences
+$\{\mathbf{A}^{(k)}_{t:t+H-1}\}_{k=1}^{K}$
+\FOR{$k=1$ to $K$}
+    \STATE Initialize $\hat{X}^{(k)}_t \leftarrow X_t$,
+    $J^{(k)}\leftarrow 0$, $s^{(k)}\leftarrow \mathrm{true}$
+    \FOR{$h=0$ to $H-1$}
+        \STATE Predict
+        $(\Delta\hat{X},\hat{r},\hat{c})
+        \leftarrow
+        f_\theta(\mathcal{G},\hat{X}^{(k)}_{t+h},A^{(k)}_{t+h})$
+        \STATE Update imagined state
+        $\hat{X}^{(k)}_{t+h+1}\leftarrow
+        \hat{X}^{(k)}_{t+h}+\Delta\hat{X}$
+        \STATE Update score
+        $J^{(k)}\leftarrow J^{(k)}+\gamma^h\hat{r}$
+        \IF{$\hat{c}>\tau$}
+            \STATE $s^{(k)}\leftarrow \mathrm{false}$
+        \ENDIF
+    \ENDFOR
+\ENDFOR
+\STATE $\mathcal{K}_{\mathrm{safe}}\leftarrow
+\{k:s^{(k)}=\mathrm{true}\}$
+\IF{$\mathcal{K}_{\mathrm{safe}}\neq\emptyset$}
+    \STATE $k^*\leftarrow
+    \arg\max_{k\in\mathcal{K}_{\mathrm{safe}}}J^{(k)}$
+    \STATE Execute $A^{(k^*)}_t$
+\ELSE
+    \STATE Execute no-op action
+\ENDIF
+\STATE Observe $X_{t+1}$ and re-plan
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Online Deployment on Kubernetes}
+\label{sec:deployment}
+
+NetDream is designed to run as a closed-loop controller against a real
+Kubernetes cluster. The trained world model and the imagination planner
+are wrapped in a small Python service that integrates with the
+cluster's standard observability stack; the controller is the same
+binary across local development clusters and managed cloud clusters,
+differing only in its kubeconfig target.
+
+\paragraph{State estimator.}
+At every control step (5\,s in our deployment), the controller queries
+Prometheus for per-service metrics (CPU, memory, request rate, p99
+latency, error rate) and reads the current replica count from the
+Kubernetes API. These signals are assembled into the state matrix
+$X_t\in\mathbb{R}^{N\times d}$ used by the world model.
+
+\paragraph{Planner and action application.}
+$X_t$ and the static service-call graph $\mathcal{G}$ are passed to
+Algorithm~\ref{alg:netdream}, which returns a per-service action vector
+$A^{(k^*)}_t \in\{-1,0,+1\}^N$. Each non-zero entry is applied as a
+patch to the corresponding \texttt{Deployment}'s \texttt{scale}
+sub-resource via the \texttt{apps/v1} API. If
+$\mathcal{K}_{\mathrm{safe}}=\emptyset$, the controller emits a no-op
+and logs a fallback event.
+
+\paragraph{Closed loop and offline data collection.}
+Each (state, action, next state, reward, violation) tuple observed at
+runtime is appended to a transition log, which can be used to retrain
+or fine-tune the world model offline. This closes the loop between
+deployment and learning without requiring any online exploration in
+the live cluster. Detailed cluster configuration, controller pseudocode,
+and operational metrics are provided in
+Appendix~\ref{app:deployment}.
+
+This planning loop is the point where the world model is used. The model
+does not merely provide an auxiliary prediction loss; it is queried
+online to simulate possible futures, evaluate their cost, estimate their
+safety, and choose the next scaling action. NetDream therefore converts
+Kubernetes autoscaling from reactive control into world-model-based
+planning.

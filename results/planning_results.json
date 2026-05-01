@@ -1,0 +1,156 @@
+{
+  "k8s_constant_Random": {
+    "cost_mean": 26.323999999999995,
+    "cost_std": 3.3791632100270013,
+    "violations_mean": 27.0,
+    "violations_std": 9.38083151964686,
+    "steps_mean": 60.0
+  },
+  "k8s_constant_HPA": {
+    "cost_mean": 9.42200000000001,
+    "cost_std": 0.17255723688098365,
+    "violations_mean": 5.0,
+    "violations_std": 0.8944271909999159,
+    "steps_mean": 60.0
+  },
+  "k8s_constant_NetDream-H5": {
+    "cost_mean": 7.676000000000002,
+    "cost_std": 0.2571847584908543,
+    "violations_mean": 0.4,
+    "violations_std": 0.8000000000000002,
+    "steps_mean": 60.0
+  },
+  "k8s_constant_NetDream-H5-Safe": {
+    "cost_mean": 7.514000000000001,
+    "cost_std": 0.15742934923323615,
+    "violations_mean": 0.0,
+    "violations_std": 0.0,
+    "steps_mean": 60.0
+  },
+  "k8s_variable_Random": {
+    "cost_mean": 20.791999999999998,
+    "cost_std": 2.9713256300849973,
+    "violations_mean": 24.0,
+    "violations_std": 7.771743691090179,
+    "steps_mean": 60.0
+  },
+  "k8s_variable_HPA": {
+    "cost_mean": 9.486000000000004,
+    "cost_std": 0.4233013111248307,
+    "violations_mean": 6.2,
+    "violations_std": 0.9797958971132712,
+    "steps_mean": 60.0
+  },
+  "k8s_variable_NetDream-H5": {
+    "cost_mean": 7.395999999999999,
+    "cost_std": 0.33073252032419936,
+    "violations_mean": 0.0,
+    "violations_std": 0.0,
+    "steps_mean": 60.0
+  },
+  "k8s_variable_NetDream-H5-Safe": {
+    "cost_mean": 7.606000000000002,
+    "cost_std": 0.5234730174517102,
+    "violations_mean": 0.0,
+    "violations_std": 0.0,
+    "steps_mean": 60.0
+  },
+  "k8s_bursty_Random": {
+    "cost_mean": 25.922000000000004,
+    "cost_std": 0.47574783236500195,
+    "violations_mean": 9.8,
+    "violations_std": 7.413501197140255,
+    "steps_mean": 60.0
+  },
+  "k8s_bursty_HPA": {
+    "cost_mean": 9.272000000000002,
+    "cost_std": 0.6895911832382999,
+    "violations_mean": 6.6,
+    "violations_std": 6.590902821313633,
+    "steps_mean": 60.0
+  },
+  "k8s_bursty_NetDream-H5": {
+    "cost_mean": 7.328000000000001,
+    "cost_std": 0.2172003683238114,
+    "violations_mean": 9.2,
+    "violations_std": 4.48998886412873,
+    "steps_mean": 60.0
+  },
+  "k8s_bursty_NetDream-H5-Safe": {
+    "cost_mean": 7.5760000000000005,
+    "cost_std": 0.24976789225198692,
+    "violations_mean": 8.6,
+    "violations_std": 3.4409301068170506,
+    "steps_mean": 60.0
+  },
+  "k8s_flash_Random": {
+    "cost_mean": 25.621999999999996,
+    "cost_std": 2.2939607668833384,
+    "violations_mean": 27.4,
+    "violations_std": 18.969449122207003,
+    "steps_mean": 60.0
+  },
+  "k8s_flash_HPA": {
+    "cost_mean": 11.060000000000013,
+    "cost_std": 0.09507891459203728,
+    "violations_mean": 15.2,
+    "violations_std": 0.9797958971132712,
+    "steps_mean": 60.0
+  },
+  "k8s_flash_NetDream-H5": {
+    "cost_mean": 7.954000000000002,
+    "cost_std": 0.3951506042004757,
+    "violations_mean": 30.8,
+    "violations_std": 2.7129319932501073,
+    "steps_mean": 60.0
+  },
+  "k8s_flash_NetDream-H5-Safe": {
+    "cost_mean": 8.148000000000001,
+    "cost_std": 0.6526990117964011,
+    "violations_mean": 31.6,
+    "violations_std": 3.261901286060018,
+    "steps_mean": 60.0
+  },
+  "k8s_bursty_H1": {
+    "cost_mean": 8.13,
+    "cost_std": 0.14042791745233554,
+    "violations_mean": 8.6,
+    "violations_std": 3.49857113690718,
+    "steps_mean": 60.0
+  },
+  "k8s_bursty_H3": {
+    "cost_mean": 7.122000000000004,
+    "cost_std": 0.2984895308046819,
+    "violations_mean": 7.6,
+    "violations_std": 3.8262252939417984,
+    "steps_mean": 60.0
+  },
+  "k8s_bursty_H5": {
+    "cost_mean": 7.5820000000000025,
+    "cost_std": 0.3716665171898059,
+    "violations_mean": 8.4,
+    "violations_std": 3.7202150475476548,
+    "steps_mean": 60.0
+  },
+  "grid2op_Do-Nothing": {
+    "cost_mean": 0.0,
+    "cost_std": 0.0,
+    "violations_mean": 2.0,
+    "violations_std": 4.0,
+    "steps_mean": 80.6
+  },
+  "grid2op_NetDream-H5": {
+    "cost_mean": 0.0,
+    "cost_std": 0.0,
+    "violations_mean": 0.0,
+    "violations_std": 0.0,
+    "steps_mean": 100.0
+  },
+  "grid2op_NetDream-H5-Safe": {
+    "cost_mean": 0.0,
+    "cost_std": 0.0,
+    "violations_mean": 0.0,
+    "violations_std": 0.0,
+    "steps_mean": 100.0
+  }
+}

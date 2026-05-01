@@ -1,0 +1,47 @@
+\section{Discussion}
+\label{sec:discussion}
+
+\paragraph{Why the graph matters.}
+The ablation in Section~\ref{sec:ablation} shows that a parameter-matched
+GCN (86K params, same as GAT) outperforms a flat MLP (35K) by $2\times$
+on 1-step prediction, ruling out parameter count as the explanation.
+A service's latency depends primarily on the load arriving from its
+direct callers, and message passing encodes this locality directly.
+GAT's further advantage over GCN reflects the heterogeneity of call
+weights---frontend routes 90\% of its traffic to product-catalog and
+roughly 20\% to payment---which uniform aggregation dilutes.
+
+\paragraph{Where the safety filter helps less.}
+On bursty and flash-crowd traffic, NetDream-Safe still violates SLOs
+more often than on steady traffic, because latency---the hardest
+feature to predict (Appendix~\ref{app:perfeature})---is what drives
+SLO breaches. Under distributional shift the constraint predictor's
+in-distribution recall ($p=0.9984$) no longer applies, and the filter
+provides best-effort rather than reliable rejection. Online model
+adaptation on live cluster traces is the natural extension and we
+leave it to future work.
+
+\paragraph{Limitations.}
+(1)~\emph{Statistical power.} EKS results use three seeds per cell;
+the bootstrap 95\% CI on the aggregate violation advantage over
+HPA-min3 crosses zero (Appendix~\ref{app:stats}), so the cost
+advantage (tight CI, 54\%) is the primary empirical claim and the
+violation advantage should be read as a same-tier result, not a
+strict win.
+(2)~\emph{Baseline coverage.} GraphPilot~\citep{chen2025graphpilot}
+and KARMA~\citep{karma2025} were not publicly available at evaluation
+time; we compare against their algorithmic paradigms via PPO-500K and
+NetDream itself rather than head-to-head implementations. A
+graph-structured PPO would be a stronger learned-policy ablation.
+(3)~\emph{Topology scale.} Online Boutique's 11-service topology is
+smaller than many production deployments; scaling to ${\sim}100$-node
+graphs will require sparse or hierarchical attention rather than the
+dense GAT used here.
+(4)~\emph{Cost proxy.} Replica count proxies dollar cost; vCPU/memory
+shapes and spot-vs-on-demand pricing are not modelled.
+(5)~\emph{Service-call graph as a known input.} We assume the directed
+service-call graph is known a priori, encoded once from the Online
+Boutique application's deployment manifests. In production this graph
+can be obtained automatically from a service mesh (e.g.\ Istio) or a
+distributed-tracing system (e.g.\ Jaeger); dynamic topology changes
+(services coming online or being deprecated) are out of scope.

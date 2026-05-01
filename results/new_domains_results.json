@@ -1,0 +1,64 @@
+{
+  "water_mse": {
+    "1": 0.0018522426473282394,
+    "5": 0.0069036679953569545,
+    "10": 0.02335028159432113
+  },
+  "epinet_mse": {
+    "1": 0.00010451335210746038,
+    "5": 0.00019478472695482195,
+    "10": 0.00038758843584218994
+  },
+  "water_planning": {
+    "do_nothing": {
+      "cost_mean": 7143.51953125,
+      "cost_std": 0.0,
+      "violations_mean": 96.0,
+      "violations_std": 0.0
+    },
+    "always_high": {
+      "cost_mean": 144.0,
+      "cost_std": 0.0,
+      "violations_mean": 19.0,
+      "violations_std": 0.0
+    },
+    "greedy": {
+      "cost_mean": 96.0,
+      "cost_std": 0.0,
+      "violations_mean": 59.0,
+      "violations_std": 0.0
+    },
+    "netdream": {
+      "cost_mean": 92.83333587646484,
+      "cost_std": 0.9428090453147888,
+      "violations_mean": 31.666666666666668,
+      "violations_std": 2.8674417556808756
+    }
+  },
+  "epinet_planning": {
+    "no_inter": {
+      "cost_mean": 197.2970227659059,
+      "cost_std": 0.13141057250054947,
+      "violations_mean": 56.666666666666664,
+      "violations_std": 0.4714045207910317
+    },
+    "greedy_reactive": {
+      "cost_mean": 456.8541017010605,
+      "cost_std": 14.056079164268933,
+      "violations_mean": 51.333333333333336,
+      "violations_std": 0.9428090415820634
+    },
+    "always_strong": {
+      "cost_mean": 1200.6407661836,
+      "cost_std": 0.08942297032765847,
+      "violations_mean": 0.0,
+      "violations_std": 0.0
+    },
+    "netdream": {
+      "cost_mean": 565.8989492694404,
+      "cost_std": 3.221480204597623,
+      "violations_mean": 41.0,
+      "violations_std": 10.03327796219494
+    }
+  }
+}

@@ -1,0 +1,77 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual environments
+venv/
+env/
+.venv/
+.env/
+
+# Environment / secrets
+.env
+.envrc
+*.key
+*.pem
+.aws/
+kubeconfig
+.kube/
+
+# Large training data (regenerate via experiments/collect_data.py)
+data/*.pkl
+data/*.npz
+
+# Raw episode logs (large, regenerate via cluster runs)
+results/cluster_runs/
+
+# Built supplementary archive (publish source instead)
+supplementary/netdream_code.zip
+
+# LaTeX build artifacts
+paper/*.aux
+paper/*.bbl
+paper/*.blg
+paper/*.fdb_latexmk
+paper/*.fls
+paper/*.log
+paper/*.out
+paper/*.synctex.gz
+paper/*.toc
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Local backups
+*_backup_*.pdf
+*_OLD_backup.pdf
+*.bak
+
+# Internal dev notes (not for public repo)
+CLAUDE.md
+PLAN.md
+plan.md
+PROGRESS.md
+texput.log
+.claude/
+
+# Internal walkthrough docs
+paper/PAPER_WALKTHROUGH_CN.md
+paper/abstract-drafts.md
+paper/figures/generate_pptx.py
+paper/figures/generate_drawio.py
+paper/figures/netdream_figures.pptx
+paper/figures/*.drawio
+paper/figures/fig_motivation_tikz.tex
+paper/figures/fig_overview_tikz.tex
+paper/figures/fig_overview_*backup*.pdf
+paper/figures/fig_overview_new.*
