@@ -1,0 +1,25 @@
+{
+  "name": "netdream-animation",
+  "version": "1.0.0",
+  "description": "30-second explainer animation for NetDream (graph world models for safe Kubernetes autoscaling).",
+  "private": true,
+  "scripts": {
+    "start": "remotion studio",
+    "build": "remotion render NetDream out/netdream.mp4 --concurrency=2",
+    "build-gif": "remotion render NetDream out/netdream.gif --concurrency=2",
+    "preview": "remotion studio"
+  },
+  "dependencies": {
+    "@remotion/bundler": "^4.0.0",
+    "@remotion/cli": "^4.0.0",
+    "@remotion/renderer": "^4.0.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "remotion": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "typescript": "^5.0.0"
+  }
+}
