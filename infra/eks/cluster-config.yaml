@@ -7,7 +7,7 @@ metadata:
   version: "1.30"
   tags:
     Project: netdream-paper2
-    Owner: guilinzhang
+    Owner: anonymous
     Purpose: research-validation
     AutoTeardown: "true"
     MaxCostUSD: "10"
