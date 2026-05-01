@@ -34,24 +34,21 @@ npm run build            # writes out/netdream.mp4 (1920x1080, 30 fps, h264)
 npm run build-gif        # writes out/netdream.gif
 ```
 
-## Optional: drop in stock footage
+## Stock footage and audio (already integrated)
 
-The animation is fully self-contained — no external assets required.
-But if you want extra texture, the codebase is structured to consume
-optional Pexels-style clips:
+`remotion/public/` ships with four Pexels-licensed assets that the
+animation already uses:
 
-1. Download free clips from https://www.pexels.com/videos:
-   - `data center` flythrough → for the (C3) deployment scene
-   - `abstract data network` particles → background overlay
-   - `code on screen` → 1-second flash during (C1)
-2. Drop them into `remotion/public/` (named e.g. `datacenter.mp4`,
-   `particles.mp4`, `code.mp4`).
-3. Edit `src/components/Background.tsx` and the relevant scene to import
-   `<Video src={staticFile("datacenter.mp4")} />` from Remotion.
+| File | Origin | Where it appears |
+|------|--------|------------------|
+| `particles.mp4`    | abstract particle network | background through every scene (opacity 0.32) |
+| `icosahedron.mp4`  | wireframe 3-D geometry    | hero overlay during the Title (0–3 s) and the Outro (27–30 s) |
+| `terminal.mp4`     | scrolling code/log lines  | brief overlay around the "Logged Transitions" cylinder in (C1) |
+| `bgm.mp3`          | ambient electronic music  | full-track background, volume 0.18 |
 
-For background music, Pexels also has free royalty-free audio. Place a
-30-second clip at `public/bgm.mp3` and add `<Audio src={staticFile("bgm.mp3")} />`
-in `NetDream.tsx`.
+To swap or remove, edit `src/components/Background.tsx`,
+`src/scenes/Title.tsx`, `src/scenes/GraphWorldModel.tsx`,
+`src/scenes/Outro.tsx`, and the `<Audio>` tag in `src/NetDream.tsx`.
 
 ## Color palette
 
