@@ -121,7 +121,7 @@ Cluster manifests are in `infra/`.
 
 ## Citing
 
-If you build on this work, please cite the paper (BibTeX entry will be
+If you build on this work, please cite the paper (that BibTeX entry will be
 released with the camera-ready version).
 
 ---
