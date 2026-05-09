@@ -5,8 +5,7 @@
 ![NetDream — 30-second explainer](assets/netdream.gif)
 
 > 30-second walkthrough of the three modules: graph world model →
-> imagination-based planner → online deployment on Kubernetes. Source
-> for this animation is in [`remotion/`](remotion/); rendered video at
+> imagination-based planner → online deployment on Kubernetes. Rendered video at
 > [`assets/netdream.mp4`](assets/netdream.mp4).
 
 NetDream learns a graph-structured dynamics model of a microservice
